@@ -1,0 +1,8 @@
+*** Settings ***
+Library           SeleniumLibrary
+
+*** Keywords ***
+login_success
+    Input Text    name:phone    15900980894
+    Input Password    name:password    love13795
+    Click Button    xpath:/html/body/app-root/div/snail-index/div/div/div/div[3]/div/div[1]/a

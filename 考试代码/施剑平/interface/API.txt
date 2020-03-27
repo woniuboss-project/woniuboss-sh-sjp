@@ -1,0 +1,47 @@
+*** Settings ***
+Library           RequestsLibrary
+
+*** Variables ***
+&{header}         content-type=application/json
+
+*** Test Cases ***
+addCustomer
+    ${0}=    Create Dictionary    birthday=    color=    mark=    name=123    sex=
+    ...    speciesId=    weight_new=
+    ${pet}    Create List    ${0}
+    ${body}=    Create Dictionary    addr=    cardNumber=    is_open_upgrade=1    is_spending_msg=1    mark=
+    ...    member_tags=    name=jtt    phone=13245678910    sex=    shop_id=17536    shopId=17536
+    ...    spare_phone=    pet=${pet}
+    Create Session    session    https://snailpet.com
+    ${resp}    Post Request    session    /v2/Members/add    ${body}    headers=${header}
+    log    ${resp}
+    Run Keyword If    "${resp.status_code}"== "200"    log    add successful
+    ...    ELSE    log    add fail
+
+login
+    ${body}    Create Dictionary    password=love13795    phone=15900980894    shop_id=null
+    Create Session    session    https://snailpet.com
+    ${resp}    Post Request    session    /v2/Passport/login    ${body}    headers=${header}
+    Run Keyword If    "${resp.status_code}"== "200"    log    login successful
+    ...    ELSE    log    login fail
+
+pay
+    ${0}=    Create Dictionary    price=30    way=5
+    ${pay_ways}    Create List    ${0}
+    ${body}=    Create Dictionary    cart_type=0    is_spending_msg=1    mark=    order_time=0    out_id=0
+    ...    pay_ways=${pay_ways}    price=30    shop_id=17536
+    Create Session    session    https://snailpet.com
+    ${changeData}    Create Dictionary    cart_type=0    member_id=586032    out_id=0    shop_id=17536
+    ${resp}    Post Request    session    /v2/cats/change_member    ${changeData}    headers=${header}
+    ${addProductData}    Create Dictionary    activity_id=0    cart_type=0    num=1    out_id=0    product_id=2133126
+    ...    shop_id=17536    version=1
+    ${resp}    Post Request    session    /v2/carts/add_product    ${addProductData}    headers=${header}
+    ${resp}    Post Request    session    /v2/carts/build_order_new    ${body}=    headers=${header}
+    Run Keyword If    "${resp.status_code}"== "200"    log    pay successful
+    ...    ELSE    log    pay fail
+
+addProduct
+    ${body}    Set Variable    {"shopId":"17536","productId":"0","isServer":"0","name":"123","categoryId":"839952","inPrice":"0","outPrice":"10","percentage":"0","notice_stocks":"1","weight":"0","logo_images":"","detail_images":"","production_time":"","brand_name":"","version":"1","shop_id":"17536"}
+    Create Session    session    https://snailpet.com
+    ${resp}    Post Request    session    /v2/Members/add    ${body}    headers=${header}
+    Should Be Equal As Strings    ${resp.status_code}    200
